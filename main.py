@@ -17,6 +17,8 @@ DIRECTORY_MAP = {
     ".epub": "Books",
 }
 
+moving_info = {}
+
 
 def organize():
     if not DOWNLOADS_PATH.exists():
@@ -34,10 +36,22 @@ def organize():
                 try:
                     print(f"Moving {file_path.name} to {dest_dir}")
                     shutil.move(str(file_path), str(dest_path))
+
+                    # Update moving info
+                    if dest_dir in moving_info:
+                        moving_info[dest_dir] += 1
+                    else:
+                        moving_info[dest_dir] = 1
                 except Exception as e:
                     print(f"Failed to move {file_path.name}: {e}")
             else:
                 print(f"No rule for extension: {ext} ({file_path.name})")
+    print("\n ---Finished---")
+    if not moving_info:
+        print("No files moved, cuz emty foder, bruh")
+    else:
+        for folder, count in moving_info.items():
+            print(f"Moved {count} files to {folder}.")
 
 
 if __name__ == "__main__":
