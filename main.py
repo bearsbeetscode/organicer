@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 import shutil
 
@@ -15,15 +16,31 @@ DIRECTORY_MAP = {
     ".pdf": "Books",
     ".fb2": "Books",
     ".epub": "Books",
+    ".mobi": "Books",
 }
 
 moving_info = {}
 
 
+def notify(title, message):
+    """
+    Sends passive KDE notification.
+    """
+    subprocess.run(["kdialog", "--title", title, "--passivepopup", message, "5"])
+
+
 def organize():
+    files_moved = 0
     if not DOWNLOADS_PATH.exists():
         print(f"Directory {DOWNLOADS_PATH} not found.")
         return
+    ask = subprocess.run(
+        ["kdialog", "--title", "Sure 'bout this?", "--yesno", "Start moving files?"]
+    )
+    if ask.returncode != 0:
+        print("User cancelled")
+        return
+
     for file_path in DOWNLOADS_PATH.iterdir():
         if file_path.is_file():
             ext = file_path.suffix.lower()
@@ -36,7 +53,7 @@ def organize():
                 try:
                     print(f"Moving {file_path.name} to {dest_dir}")
                     shutil.move(str(file_path), str(dest_path))
-
+                    files_moved += 1
                     # Update moving info
                     if dest_dir in moving_info:
                         moving_info[dest_dir] += 1
@@ -50,6 +67,7 @@ def organize():
     if not moving_info:
         print("No files moved, cuz emty foder, bruh")
     else:
+        notify("Great", f"Moved {files_moved} files.")
         for folder, count in moving_info.items():
             print(f"Moved {count} files to {folder}.")
 
